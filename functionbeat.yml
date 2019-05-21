@@ -1,0 +1,33 @@
+########################## Functionbeat Configuration ###########################
+
+# This file is a full configuration example documenting all non-deprecated
+# options in comments. For a shorter configuration example, that contains only
+# the most common options, please see functionbeat.yml in the same directory.
+#
+# You can find the full configuration reference here:
+# https://www.elastic.co/guide/en/beats/functionbeat/index.html
+#
+#============================  Provider ===============================
+# Configure functions to run on AWS Lambda, currently we assume that the credentials
+# are present in the environment to correctly create the function when using the CLI.
+#
+# Configure which S3 bucket we should upload the lambda artifact.
+functionbeat.provider.aws.deploy_bucket: "flosports-functionbeat-deploy"
+
+queue.mem:
+  events: 4096
+  flush.min_events: 512
+  flush.timeout: 5s
+
+#============================= Elastic Cloud ==================================
+
+# These settings simplify using functionbeat with the Elastic Cloud (https://cloud.elastic.co/).
+
+# The cloud.id setting overwrites the `output.elasticsearch.hosts` and
+# `setup.kibana.host` options.
+# You can find the `cloud.id` in the Elastic Cloud web UI.
+cloud.id: "${CLOUD_ID}"
+
+# The cloud.auth setting overwrites the `output.elasticsearch.username` and
+# `output.elasticsearch.password` settings. The format is `<user>:<pass>`.
+cloud.auth: "${CLOUD_AUTH}"
