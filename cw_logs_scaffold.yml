@@ -27,12 +27,5 @@
     fields:
       env: ENV_REPLACE_ME
 
-    # Define custom processors for this function.
-    processors:
-    - drop_event:
-        when:
-          not_equals:
-              message_type: DATA_MESSAGE
-
     # List of cloudwatch log group registered to that function.
     triggers:
