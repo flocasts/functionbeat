@@ -1,2 +1,5 @@
+functionbeat.yml
+log_groups.txt
+logs
 set_aws_creds.sh
-configs/*
+.vscode
