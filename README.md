@@ -1,4 +1,4 @@
-# Welcome to Functionbeat 7.0.1
+# Welcome to Functionbeat 7.1.1
 
 Functionbeat is a beat implementation for a serverless architecture.
 
@@ -15,13 +15,13 @@ instance. To load the dashboards for Functionbeat into Kibana, run:
     ./functionbeat setup -e
 
 For further steps visit the
-[Getting started](https://www.elastic.co/guide/en/beats/functionbeat/7.0/functionbeat-getting-started.html) guide.
+[Getting started](https://www.elastic.co/guide/en/beats/functionbeat/7.1/functionbeat-getting-started.html) guide.
 
 ## Documentation
 
-Visit [Elastic.co Docs](https://www.elastic.co/guide/en/beats/functionbeat/7.0/index.html)
+Visit [Elastic.co Docs](https://www.elastic.co/guide/en/beats/functionbeat/7.1/index.html)
 for the full Functionbeat documentation.
 
 ## Release notes
 
-https://www.elastic.co/guide/en/beats/libbeat/7.0/release-notes-7.0.1.html
+https://www.elastic.co/guide/en/beats/libbeat/7.1/release-notes-7.1.1.html
