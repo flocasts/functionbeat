@@ -101,26 +101,33 @@ processors:
         - subscription_filters
         - message_type
 
+  - rename:
+      fields:
+        - from: message
+          to: log
+
   - dissect:
-      tokenizer: "%{time}	%{id}	%{msg}"
-      field: "message"
-      target_prefix: "fn"
+      tokenizer: "%{ts}	%{id}	%{msg}"
+      field: log
+      target_prefix: dissect
+
+  - decode_json_fields:
+      fields: ["dissect.msg"]
+      process_array: false
+      max_depth: 3
+      target: message
 
   - rename:
       fields:
-        - from: "fn.time"
-          to: "fn.time"
-        - from: "fn.id"
-          to: "exec_id"
+        - from: "dissect.ts"
+          to: "message.ts"
+        - from: "dissect.id"
+          to: "message.id"
       ignore_missing: false
-      fail_on_error: true
 
-  - decode_json_fields:
-      fields: ["fn.msg"]
-      process_array: false
-      max_depth: 3
-      overwrite_keys: true
-      target: "fn"
+  - drop_fields:
+      fields:
+        - log
 
 
 functionbeat.provider.aws.functions:

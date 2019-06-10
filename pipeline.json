@@ -2,13 +2,14 @@
   "description": "CloudWatch Logs Pipeline",
   "processors": [
     {
-      "remove": {
-        "field": "@timestamp"
+      "gsub": {
+        "field": "message.log_group",
+        "pattern": "\\/aws\\/lambd\\/",
+        "replacement": "",
+        "target_field": "message.function"
       },
-      "date": {
-        "field": "fn.time",
-        "formats": ["yyyy-dd-mm'T'HH:mm:ss.SSS'Z'"]
-        "target_field": "@timestamp"
+      "remove": {
+        "field": "message.log_group"
       }
     }
   ]
