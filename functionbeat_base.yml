@@ -23,7 +23,7 @@ path.home: '.'
 path.config: ${path.home}
 path.data: /tmp/data
 
-logging.level: warning
+logging.level: info
 logging.json: true
 
 #================================ Keystore ==========================================
@@ -44,10 +44,14 @@ cloud.id: "${CLOUD_ID}"
 cloud.auth: "${CLOUD_AUTH}"
 
 ouput.elasticsearch:
-  index: "functionbeat-*"
+  index: "functionbeat-%{[agent.version]}"
   pipeline: cloudwatch-logs
+  # parameters:
+  #   pipeline: cloudwatch-logs
 
-setup.ilm.enabled: true
+setup.ilm.enabled: auto
+setup.ilm.rollover_alias: "functionbeat"
+setup.ilm.pattern: "{now/d}-000001"
 
 #============================== Kibana =====================================
 
@@ -66,13 +70,9 @@ setup.kibana:
   username: "${KIBANA_USER}"
   password: "${KIBANA_PASS}"
 
-setup.template.name: "functionbeat"
-setup.template.pattern: "functionbeat-*"
+setup.template.enabled: true
 setup.template.fields: "${path.config}/fields.yml"
 setup.template.overwrite: false
-setup.template.settings:
-  index.number_of_shards: 1
-  index.number_of_replicas: 1
 
 #================================ Processors ===================================
 
@@ -96,38 +96,27 @@ processors:
         - ecs.version
         - host.name
         - id
+        - log_group
         - log_stream
         - owner
         - subscription_filters
         - message_type
 
-  - rename:
-      fields:
-        - from: message
-          to: log
-
   - dissect:
-      tokenizer: "%{ts}	%{id}	%{msg}"
-      field: log
-      target_prefix: dissect
+      tokenizer: "%{ts}	%{id}	%{json}"
+      field: message
+      target_prefix: "dissect"
 
   - decode_json_fields:
-      fields: ["dissect.msg"]
+      fields: ["dissect.json"]
       process_array: false
       max_depth: 3
-      target: message
-
-  - rename:
-      fields:
-        - from: "dissect.ts"
-          to: "message.ts"
-        - from: "dissect.id"
-          to: "message.id"
-      ignore_missing: false
+      target: "log"
 
   - drop_fields:
       fields:
-        - log
+        - message
+        - dissect
 
 
 functionbeat.provider.aws.functions:

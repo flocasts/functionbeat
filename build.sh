@@ -10,11 +10,13 @@ exclude=${3:=""}
 
 [[ $exclude != "" ]] && exclude="|$exclude"
 
-aws --profile=flosports-production lambda list-functions | awk "/FunctionName/ && /${namespace}/ { print \$2 }" \
-  | egrep -v "logger|datadog|log-processor${exclude}" \
-  | sed 's/"//g;s/,//' | sort >|log_groups.txt
 
-split=30
+# Only populating live-api-<env>-hello-world until development is complete
+aws --profile=flosports-production lambda list-functions | awk "/FunctionName/ && /${namespace}/ { print \$2 }" \
+  | grep 'hello-world' | sed 's/"//g;s/,//' | sort >|log_groups.txt
+# | egrep -v "logger|datadog|log-processor${exclude}" | sed 's/"//g;s/,//' | sort >|log_groups.txt
+
+split=40
 iter=0
 suffix=0
 entry=""
@@ -42,7 +44,7 @@ for fn in `cat log_groups.txt`; do
   iter=$((iter + 1))
 done
 
-#rm -f log_groups.txt
-
+echo "Executing functionbeat $action..."
 set -x
+./functionbeat setup -e -v
 ./functionbeat $action -e ${namespace}-log-processor{0..${suffix}}
