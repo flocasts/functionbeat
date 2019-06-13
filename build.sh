@@ -32,7 +32,7 @@ for fn in `cat log_groups.txt`; do
       suffix=$((suffix + 1))
     fi  
 
-    echo "Generating log-processor - ${suffix}."
+    echo "Generating configuration for ${namespace}-log-processor${suffix}."
     echo >>functionbeat.yml
     sed "s/NAME_REPLACE_ME/${namespace}-log-processor${suffix}/" cloudwatch_template.yml >>functionbeat.yml
     echo "$entry" >>functionbeat.yml

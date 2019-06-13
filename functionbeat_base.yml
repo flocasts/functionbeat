@@ -105,18 +105,25 @@ processors:
   - dissect:
       tokenizer: "%{ts}	%{id}	%{json}"
       field: message
-      target_prefix: "dissect"
+      target_prefix: dissect
 
   - decode_json_fields:
-      fields: ["dissect.json"]
+      fields: [ "dissect.json" ]
       process_array: false
       max_depth: 3
-      target: "log"
+      target: log
+
+  - rename:
+      fields:
+        - from: "dissect.ts"
+          to: timestamp
 
   - drop_fields:
       fields:
         - message
         - dissect
+
+
 
 
 functionbeat.provider.aws.functions:
