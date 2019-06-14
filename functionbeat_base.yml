@@ -44,13 +44,13 @@ cloud.id: "${CLOUD_ID}"
 cloud.auth: "${CLOUD_AUTH}"
 
 ouput.elasticsearch:
-  index: "functionbeat-%{[agent.version]}"
+  index: "functionbeat-7.1.1"
   pipeline: cloudwatch-logs
   # parameters:
   #   pipeline: cloudwatch-logs
 
 setup.ilm.enabled: auto
-setup.ilm.rollover_alias: "functionbeat"
+setup.ilm.rollover_alias: "functionbeat-7.1.1"
 setup.ilm.pattern: "{now/d}-000001"
 
 #============================== Kibana =====================================
@@ -103,7 +103,7 @@ processors:
         - message_type
 
   - dissect:
-      tokenizer: "%{ts}	%{id}	%{json}"
+      tokenizer: "%{timestamp}	%{id}	%{json}"
       field: message
       target_prefix: dissect
 
@@ -111,19 +111,12 @@ processors:
       fields: [ "dissect.json" ]
       process_array: false
       max_depth: 3
-      target: log
-
-  - rename:
-      fields:
-        - from: "dissect.ts"
-          to: timestamp
+      target: "log"
 
   - drop_fields:
       fields:
         - message
         - dissect
-
-
 
 
 functionbeat.provider.aws.functions:
