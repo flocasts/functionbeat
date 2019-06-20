@@ -37,21 +37,32 @@ keystore.path: "${path.config}/beats.keystore"
 # The cloud.id setting overwrites the `output.elasticsearch.hosts` and
 # `setup.kibana.host` options.
 # You can find the `cloud.id` in the Elastic Cloud web UI.
-cloud.id: "${CLOUD_ID}"
+#
 
 # The cloud.auth setting overwrites the `output.elasticsearch.username` and
 # `output.elasticsearch.password` settings. The format is `<user>:<pass>`.
+#cloud.auth: "${CLOUD_AUTH}"
+
+cloud.id: "${CLOUD_ID}"
 cloud.auth: "${CLOUD_AUTH}"
 
-ouput.elasticsearch:
-  index: "functionbeat-7.1.1"
+output.elasticsearch:
+  enabled: true
+# index: "functionbeat"
   pipeline: cloudwatch-logs
-  # parameters:
-  #   pipeline: cloudwatch-logs
+
+setup.template.json.enabled: true
+setup.template.json.path: "${path.config}/fields.json"
+setup.template.json.name: "functionbeat"
+setup.template.overwrite: false
+# setup.template.name: functionbeat
+# setup.template.pattern: "functionbeat-*"
 
 setup.ilm.enabled: auto
-setup.ilm.rollover_alias: "functionbeat-7.1.1"
-setup.ilm.pattern: "{now/d}-000001"
+# setup.ilm.name: functionbeat
+# setup.ilm.rollover_alias: functionbeat
+# setup.ilm.pattern: "{now/d}-000001"
+# setup.ilm.overwrite: true
 
 #============================== Kibana =====================================
 
@@ -70,9 +81,7 @@ setup.kibana:
   username: "${KIBANA_USER}"
   password: "${KIBANA_PASS}"
 
-setup.template.enabled: true
-setup.template.fields: "${path.config}/fields.yml"
-setup.template.overwrite: false
+
 
 #================================ Processors ===================================
 
@@ -115,7 +124,6 @@ processors:
 
   - drop_fields:
       fields:
-        - message
         - dissect
 
 

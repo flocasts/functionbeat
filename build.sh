@@ -46,5 +46,5 @@ done
 
 echo "Executing functionbeat $action..."
 set -x
-./functionbeat setup --ilm-policy --pipelines --template -e -v
+./functionbeat setup -e -v
 ./functionbeat $action -e ${namespace}-log-processor{0..${suffix}}
