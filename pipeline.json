@@ -1,20 +1,19 @@
 {
-  "description": "CloudWatch Logs Pipeline",
-  "processors": [
-    {
-      "date": {
-        "ignore_failure": false,
-        "field": "log.context.requestContext.requestTimeEpoch",
-        "formats": ["UNIX_MS"],
-        "on_failure": [
-          {
-            "set" : {
-              "field": "error",
-              "value": "{{ _ingest.on_failure_message }}"
-            }
-          }
-        ]
+  "description" : "CloudWatch Logs Pipeline.",
+  "on_failure" : [
+      {
+        "set" : {
+          "field" : "error.message",
+          "value" : "{{ _ingest.on_failure_message }}"
+        }
       }
-    }
-  ]
+    ],
+      "processors" : [
+      {
+        "date": {
+         "field": "log.context.requestContext.requestTimeEpoch",
+         "formats" : ["UNIX_MS"]
+        }
+      }
+    ]
 }

@@ -3,3 +3,4 @@ log_groups.txt
 logs
 set_aws_creds.sh
 .vscode
+/.project

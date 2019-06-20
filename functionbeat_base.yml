@@ -51,10 +51,10 @@ output.elasticsearch:
 # index: "functionbeat"
   pipeline: cloudwatch-logs
 
-setup.template.json.enabled: true
-setup.template.json.path: "${path.config}/fields.json"
-setup.template.json.name: "functionbeat"
-setup.template.overwrite: false
+#setup.template.json.enabled: true
+#setup.template.json.path: "${path.config}/fields.json"
+#setup.template.json.name: "functionbeat"
+#setup.template.overwrite: false
 # setup.template.name: functionbeat
 # setup.template.pattern: "functionbeat-*"
 
