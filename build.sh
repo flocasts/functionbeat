@@ -1,50 +1,102 @@
-#!env zsh
+#!/bin/bash
 set -e
 
-SID=$(uuid)
+### Must be exported by calling shell ###
+# ENV_AUTH
+# ENV_ID
+#########################################
 
-#TODO - enforce params
-namespace=$1
-action=$2
-exclude=${3:=""}
+AWS="aws --profile=flosports-production" 
+ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
+NAMESPACE=$1
+ENV=$2
+EXCLUDE="$3"
+FN_NAME="log-processor-${NAMESPACE}"
+MEM_SIZE=1024
+TIMEOUT=30
 
-[[ $exclude != "" ]] && exclude="|$exclude"
 
+[[ $EXCLUDE == "" ]] || EXCLUDE="|$EXCLUDE"
 
-# Only populating live-api-<env>-hello-world until development is complete
-aws --profile=flosports-production lambda list-functions | awk "/FunctionName/ && /${namespace}/ { print \$2 }" \
-  | grep 'hello-world' | sed 's/"//g;s/,//' | sort >|log_groups.txt
-# | egrep -v "logger|datadog|log-processor${exclude}" | sed 's/"//g;s/,//' | sort >|log_groups.txt
+echo "Building ${FN_NAME}."
 
-split=40
-iter=0
-suffix=0
-entry=""
-cp -f functionbeat_base.yml functionbeat.yml
+# $AWS lambda list-functions | awk "/FunctionName/ && /${NAMESPACE}/ { print \$2 }" \
+#   | egrep -v "logger|datadog|log-processor${EXCLUDE}" | sed 's/"//g;s/,//' | sort >|functions.txt
 
-for fn in `cat log_groups.txt`; do
+sed "s/VAR_NAME/${FN_NAME}/;s/VAR_ENV/${ENV}/" functionbeat_base.yml >| functionbeat.yml
 
-  entry="      - { log_group_name: /aws/lambda/${fn}, filter_pattern: actualEnv }"
-
-  if [[ $((iter % split)) -eq 0 ]]; then
-
-    if [[ $iter -ne 0 ]]; then
-      suffix=$((suffix + 1))
-    fi  
-
-    echo "Generating configuration for ${namespace}-log-processor${suffix}."
-    echo >>functionbeat.yml
-    sed "s/NAME_REPLACE_ME/${namespace}-log-processor${suffix}/" cloudwatch_template.yml >>functionbeat.yml
-    echo "$entry" >>functionbeat.yml
-
-  else
-    echo "$entry" >>functionbeat.yml
-  fi  
-
-  iter=$((iter + 1))
+for fn in `cat functions.txt`; do
+  entry="          - { log_group_name: /aws/lambda/${fn}, filter_pattern: '?\"Task timed out\" ?\"{\"' }"
+  echo "$entry" >>functionbeat.yml
 done
 
-echo "Executing functionbeat $action..."
-set -x
-./functionbeat setup -e -v
-./functionbeat $action -e ${namespace}-log-processor{0..${suffix}}
+./functionbeat setup -e -v --template --pipelines
+echo "Building function package."
+./functionbeat -e -v package
+
+# echo "Building function package."
+# zip -r package.zip data functionbeat.yml functionbeat
+
+set +e
+EXISTS=$($AWS lambda get-function --function-name log-processor-${NAMESPACE} --output text || false)
+set -e
+if [[ $EXISTS ]]; then
+  echo "${FN_NAME} exists. Updating function."
+
+  $AWS lambda update-function-configuration \
+    --role "$ROLE" \
+    --runtime "go1.x" \
+    --handler "functionbeat" \
+    --memory-size $MEM_SIZE \
+    --function-name "$FN_NAME" \
+    --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
+    --timeout $TIMEOUT \
+    --output text
+
+  $AWS lambda update-function-code \
+    --function-name "$FN_NAME" \
+    --publish \
+    --zip-file fileb://package.zip \
+    --output text
+
+fi
+
+# else
+
+#   echo "Creating ${FN_NAME}."
+
+#   $AWS lambda create-function \
+#     --role "$ROLE" \
+#     --runtime "go1.x" \
+#     --handler "functionbeat" \
+#     --publish \
+#     --zip-file fileb://package.zip \
+#     --memory-size $MEM_SIZE \
+#     --function-name "$FN_NAME" \
+#     --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
+#     --timeout $TIMEOUT \
+#     --output text
+
+#   $AWS lambda add-permission \
+#     --principal logs.us-west-2.amazonaws.com \
+#     --action lambda:InvokeFunction \
+#     --statement-id "${NAMESPACE}-InvokeLogProcessor" \
+#     --source-arn "arn:aws:logs:us-west-2:215207670129:log-group:/aws/lambda/${NAMESPACE}*:*" \
+#     --function-name "$FN_NAME" \
+#     --source-account 215207670129 \
+#     --output text || true
+
+# fi
+
+echo "Adding subscription filters..."
+
+for fn in `cat functions.txt`; do 
+  echo $fn
+  fn_filter=$(tr -d '-' <<<$fn)
+  $AWS logs put-subscription-filter \
+    --filter-name $fn \
+    --log-group-name "/aws/lambda/${fn}" \
+    --filter-pattern "actualEnv" \
+    --destination-arn "arn:aws:lambda:us-west-2:215207670129:function:${FN_NAME}" \
+    --distribution "ByLogStream"
+done

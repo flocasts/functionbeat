@@ -1,130 +1,94 @@
-########################## Functionbeat Configuration ###########################
+cloud:
+  auth: "${CLOUD_AUTH}"
+  id: "${CLOUD_ID}"
+keystore:
+  path: './beats.keystore'
+logging:
+  json: true
+  level: info
+  to_files: false
+  to_stderr: true
+output:
+  elasticsearch:
+    bulk_max_size: 50
+    enabled: true
+    pipeline: cloudwatch-logs
 
-# This file is a full configuration example documenting all non-deprecated
-# options in comments. For a shorter configuration example, that contains only
-# the most common options, please see functionbeat.yml in the same directory.
-#
-# You can find the full configuration reference here:
-# https://www.elastic.co/guide/en/beats/functionbeat/index.html
-#
-#============================  Provider ===============================
-# Configure functions to run on AWS Lambda, currently we assume that the credentials
-# are present in the environment to correctly create the function when using the CLI.
-#
-#functionbeat.provider.aws.endpoint: "s3.amazonaws.com"
-functionbeat.provider.aws.deploy_bucket: "flosports-functionbeat-deploy"
-
-queue.mem:
-  events: 4096
-  flush.min_events: 8
-  flush.timeout: 5s
-
-path.home: '.'
-path.config: ${path.home}
-path.data: /tmp/data
-
-logging.level: info
-logging.json: true
-
-#================================ Keystore ==========================================
-# Location of the Keystore containing the keys and their sensitive values.
-keystore.path: "${path.config}/beats.keystore"
-
-#============================= Elastic Cloud ==================================
-
-# These settings simplify using functionbeat with the Elastic Cloud (https://cloud.elastic.co/).
-
-# The cloud.id setting overwrites the `output.elasticsearch.hosts` and
-# `setup.kibana.host` options.
-# You can find the `cloud.id` in the Elastic Cloud web UI.
-#
-
-# The cloud.auth setting overwrites the `output.elasticsearch.username` and
-# `output.elasticsearch.password` settings. The format is `<user>:<pass>`.
-#cloud.auth: "${CLOUD_AUTH}"
-
-cloud.id: "${CLOUD_ID}"
-cloud.auth: "${CLOUD_AUTH}"
-
-output.elasticsearch:
-  enabled: true
-# index: "functionbeat"
-  pipeline: cloudwatch-logs
-
-#setup.template.json.enabled: true
-#setup.template.json.path: "${path.config}/fields.json"
-#setup.template.json.name: "functionbeat"
-#setup.template.overwrite: false
-# setup.template.name: functionbeat
-# setup.template.pattern: "functionbeat-*"
-
-setup.ilm.enabled: auto
-# setup.ilm.name: functionbeat
-# setup.ilm.rollover_alias: functionbeat
-# setup.ilm.pattern: "{now/d}-000001"
-# setup.ilm.overwrite: true
-
-#============================== Kibana =====================================
-
-# Starting with Beats version 6.0.0, the dashboards are loaded via the Kibana API.
-# This requires a Kibana endpoint configuration.
-setup.kibana:
-
-  # Kibana Host
-  # Scheme and port can be left out and will be set to the default (http and 5601)
-  # In case you specify an additional path, the scheme is required: http://localhost:5601/path
-  # IPv6 addresses should always be defined as: https://[2001:db8::1]:5601
-  host: "4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243"
-
-  # Optional protocol and basic auth credentials.
-  protocol: "https"
-  username: "${KIBANA_USER}"
-  password: "${KIBANA_PASS}"
-
-
-
-#================================ Processors ===================================
-
-# Processors are used to reduce the number of fields in the exported event or to
-# enhance the event with external metadata. This section defines a list of
-# processors that are applied one by one and the first one receives the initial
-# event:
-#
-#   event -> filter1 -> event1 -> filter2 ->event2 ...
-
+path.logs: /tmp/logs
 
 processors:
+- add_tags:
+    tags: [VAR_ENV]
+    target: log.env
+- drop_fields:
+    fields:
+    - agent.ephemeral_id
+    - agent.hostname
+    - agent.id
+    - agent.type
+    - agent.version
+    - ecs.version
+    - host.name
+    - id
+    - log_group
+    - log_stream
+    - owner
+    - subscription_filters
+    - message_type
+- dissect:
+    field: message
+    target_prefix: dissect
+    tokenizer: "%{timestamp}\t%{id}\t%{msg}"
+- rename:
+    fields:
+    - from: "dissect.msg"
+      to: "log.message"
+    - from: "dissect.timestamp"
+      to: "log.timestamp"
+    when:
+      contains:
+        dissect.msg: 'Task timed out'
+- decode_json_fields:
+    fields:
+    - dissect.msg
+    max_depth: 5
+    process_array: true
+    target: log
+    when:
+      not:
+        contains:
+          dissect.msg: 'Task timed out'
+- drop_fields:
+    fields:
+    - dissect
+    - message
 
-  - drop_fields:
-      fields:
-        - agent.ephemeral_id
-        - agent.hostname
-        - agent.id
-        - agent.type
-        - agent.version
-        - ecs.version
-        - host.name
-        - id
-        - log_group
-        - log_stream
-        - owner
-        - subscription_filters
-        - message_type
+queue:
+  mem:
+    events: 128
+    flush:
+      min_events: 8
+      timeout: 10s
+setup:
+  ilm:
+    enabled: auto
+  kibana:
+    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
+    username: "${KIBANA_USER}"
+    password: "${KIBANA_PASS}"
+    protocol: https
 
-  - dissect:
-      tokenizer: "%{timestamp}	%{id}	%{json}"
-      field: message
-      target_prefix: dissect
-
-  - decode_json_fields:
-      fields: [ "dissect.json" ]
-      process_array: false
-      max_depth: 3
-      target: "log"
-
-  - drop_fields:
-      fields:
-        - dissect
-
-
-functionbeat.provider.aws.functions:
+  template:
+    enabled: true
+functionbeat:
+  provider:
+    aws:
+      deploy_bucket: flosports-functionbeat-deploy
+      functions:
+      - type: cloudwatch_logs
+        concurrency: 20
+        description: lambda function for cloudwatch logs
+        enabled: true
+        memory_size: 1024MiB
+        name: VAR_NAME
+        triggers:

@@ -1,6 +1,6 @@
+functions.txt
 functionbeat.yml
-log_groups.txt
 logs
-set_aws_creds.sh
+set_credentials.sh
 .vscode
 /.project
