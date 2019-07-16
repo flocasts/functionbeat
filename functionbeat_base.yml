@@ -1,13 +1,16 @@
 cloud:
   auth: "${CLOUD_AUTH}"
   id: "${CLOUD_ID}"
+
 keystore:
   path: './beats.keystore'
+
 logging:
   json: true
   level: info
   to_files: false
   to_stderr: true
+
 output:
   elasticsearch:
     bulk_max_size: 50
@@ -20,6 +23,7 @@ processors:
 - add_tags:
     tags: [VAR_ENV]
     target: log.env
+
 - drop_fields:
     fields:
     - agent.ephemeral_id
@@ -30,37 +34,56 @@ processors:
     - ecs.version
     - host.name
     - id
-    - log_group
     - log_stream
     - owner
     - subscription_filters
     - message_type
+
+- dissect:
+    field: log_group
+    target_prefix: dissect_log
+    tokenizer: "/aws/lambda/%{function}"
+
+- rename:
+    fields:
+    - from: "dissect_log.function"
+      to: function
+
 - dissect:
     field: message
     target_prefix: dissect
-    tokenizer: "%{timestamp}\t%{id}\t%{msg}"
+    tokenizer: "%{ts}\t%{uuid}\t%{msg}"
+
 - rename:
     fields:
-    - from: "dissect.msg"
-      to: "log.message"
-    - from: "dissect.timestamp"
-      to: "log.timestamp"
-    when:
-      contains:
-        dissect.msg: 'Task timed out'
+    - from: "dissect.ts"
+      to: start_time
+
 - decode_json_fields:
     fields:
     - dissect.msg
     max_depth: 5
-    process_array: true
+    process_array: false
     target: log
-    when:
-      not:
-        contains:
-          dissect.msg: 'Task timed out'
+    # when:
+    #   contains:
+    #     dissect.msg: "{"
+
+# Surrounding commented sections are the latest attempt to ingest lambda timeouts.
+# - add_fields:
+#     fields:
+#       lambda_error: "Task timed out"
+#       log: "{}"
+#     when:
+#       not:
+#         contains:
+#           dissect.msg: "{"
+
 - drop_fields:
     fields:
     - dissect
+    - dissect_log
+    - log_group
     - message
 
 queue:
@@ -69,6 +92,7 @@ queue:
     flush:
       min_events: 8
       timeout: 10s
+
 setup:
   ilm:
     enabled: auto
@@ -77,9 +101,9 @@ setup:
     username: "${KIBANA_USER}"
     password: "${KIBANA_PASS}"
     protocol: https
-
   template:
     enabled: true
+
 functionbeat:
   provider:
     aws:

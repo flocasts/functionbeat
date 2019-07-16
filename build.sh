@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-### Must be exported by calling shell ###
-# ENV_AUTH
-# ENV_ID
-#########################################
-
 AWS="aws --profile=flosports-production" 
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 NAMESPACE=$1
@@ -20,22 +15,20 @@ TIMEOUT=30
 
 echo "Building ${FN_NAME}."
 
-# $AWS lambda list-functions | awk "/FunctionName/ && /${NAMESPACE}/ { print \$2 }" \
-#   | egrep -v "logger|datadog|log-processor${EXCLUDE}" | sed 's/"//g;s/,//' | sort >|functions.txt
+$AWS lambda list-functions | awk "/FunctionName/ && /${NAMESPACE}/ { print \$2 }" \
+  | egrep -v "logger|datadog|log-processor${EXCLUDE}" | sed 's/"//g;s/,//' | sort >|functions.txt
 
 sed "s/VAR_NAME/${FN_NAME}/;s/VAR_ENV/${ENV}/" functionbeat_base.yml >| functionbeat.yml
 
 for fn in `cat functions.txt`; do
-  entry="          - { log_group_name: /aws/lambda/${fn}, filter_pattern: '?\"Task timed out\" ?\"{\"' }"
+  entry="          - { log_group_name: /aws/lambda/${fn}, filter_pattern: '?-START ?-END ?-REPORT' }"
+  # entry="          - { log_group_name: /aws/lambda/${fn}, filter_pattern: '{' }"
   echo "$entry" >>functionbeat.yml
 done
 
 ./functionbeat setup -e -v --template --pipelines
 echo "Building function package."
 ./functionbeat -e -v package
-
-# echo "Building function package."
-# zip -r package.zip data functionbeat.yml functionbeat
 
 set +e
 EXISTS=$($AWS lambda get-function --function-name log-processor-${NAMESPACE} --output text || false)
@@ -59,34 +52,32 @@ if [[ $EXISTS ]]; then
     --zip-file fileb://package.zip \
     --output text
 
+else
+
+  echo "Creating ${FN_NAME}."
+
+  $AWS lambda create-function \
+    --role "$ROLE" \
+    --runtime "go1.x" \
+    --handler "functionbeat" \
+    --publish \
+    --zip-file fileb://package.zip \
+    --memory-size $MEM_SIZE \
+    --function-name "$FN_NAME" \
+    --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
+    --timeout $TIMEOUT \
+    --output text
+
+  $AWS lambda add-permission \
+    --principal logs.us-west-2.amazonaws.com \
+    --action lambda:InvokeFunction \
+    --statement-id "${NAMESPACE}-InvokeLogProcessor" \
+    --source-arn "arn:aws:logs:us-west-2:215207670129:log-group:/aws/lambda/${NAMESPACE}*:*" \
+    --function-name "$FN_NAME" \
+    --source-account 215207670129 \
+    --output text || true
+
 fi
-
-# else
-
-#   echo "Creating ${FN_NAME}."
-
-#   $AWS lambda create-function \
-#     --role "$ROLE" \
-#     --runtime "go1.x" \
-#     --handler "functionbeat" \
-#     --publish \
-#     --zip-file fileb://package.zip \
-#     --memory-size $MEM_SIZE \
-#     --function-name "$FN_NAME" \
-#     --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
-#     --timeout $TIMEOUT \
-#     --output text
-
-#   $AWS lambda add-permission \
-#     --principal logs.us-west-2.amazonaws.com \
-#     --action lambda:InvokeFunction \
-#     --statement-id "${NAMESPACE}-InvokeLogProcessor" \
-#     --source-arn "arn:aws:logs:us-west-2:215207670129:log-group:/aws/lambda/${NAMESPACE}*:*" \
-#     --function-name "$FN_NAME" \
-#     --source-account 215207670129 \
-#     --output text || true
-
-# fi
 
 echo "Adding subscription filters..."
 
@@ -98,5 +89,5 @@ for fn in `cat functions.txt`; do
     --log-group-name "/aws/lambda/${fn}" \
     --filter-pattern "actualEnv" \
     --destination-arn "arn:aws:lambda:us-west-2:215207670129:function:${FN_NAME}" \
-    --distribution "ByLogStream"
+    --distribution "ByLogStream" || true
 done
