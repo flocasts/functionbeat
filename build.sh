@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-AWS="aws --profile=flosports-production" 
+# AWS="aws --profile=flosports-production" 
+AWS="aws" 
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 NAMESPACE=$1
 ENV=$2

@@ -1,8 +1,0 @@
-  - name: NAME_REPLACE_ME
-    enabled: true
-    type: cloudwatch_logs
-    description: "lambda function for cloudwatch logs"
-    concurrency: 20
-    memory_size: 128MiB
-
-    triggers:
