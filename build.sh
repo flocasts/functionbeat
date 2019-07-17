@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-AWS="aws --profile=flosports-production --output=text" 
+AWS="aws --profile=flosports-production --output=json" 
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 OS=$1
 NAMESPACE=$2
@@ -14,7 +14,7 @@ TIMEOUT=30
 [[ $EXCLUDE == "" ]] || EXCLUDE="|$EXCLUDE"
 
 if [[ $OS == "linux" ]]; then
-  AWS="aws --output=text"
+  AWS="aws --output=json"
 fi
 
 echo "Building ${FN_NAME}."
