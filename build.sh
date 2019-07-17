@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 # AWS="aws --profile=flosports-production" 
 AWS="aws" 
