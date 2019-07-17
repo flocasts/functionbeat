@@ -1,8 +1,7 @@
 #!/bin/bash
 set -ex
 
-# AWS="aws --profile=flosports-production" 
-AWS="aws" 
+AWS="aws --profile=flosports-production --output=text" 
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 OS=$1
 NAMESPACE=$2
@@ -12,8 +11,11 @@ FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=1024
 TIMEOUT=30
 
-
 [[ $EXCLUDE == "" ]] || EXCLUDE="|$EXCLUDE"
+
+if [[ $OS == "linux" ]]; then
+  AWS="aws --output=text"
+fi
 
 echo "Building ${FN_NAME}."
 
