@@ -20,10 +20,6 @@ output:
 path.logs: /tmp/logs
 
 processors:
-- add_tags:
-    tags: [VAR_ENV]
-    target: log.env
-
 - drop_fields:
     fields:
     - agent.ephemeral_id

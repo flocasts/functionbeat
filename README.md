@@ -9,16 +9,16 @@ Logs are shipped to hosted ElasticSearch where they can be viewed in
 
 Build.sh takes three parameters.
 
-1) The beginning namespace of a serverless application. eg. `live-api-prod`
-2) The environment of the application. eg. `dev` `stag` `prod`
-3) An optional list of functions keywords to blacklist. eg. `"kinda-broken|mega-broken|doesnt-even-log"`*
+1) The OS of the build (determines which compilation of functionbeat to run). Valid values are `osx` or `linux`
+2) The beginning namespace of a serverless application. eg. `live-api-prod`
+3) An optional list of functions keywords to blacklist. eg. `"xlog|ylog|zlog`
 
 ### Application xyz-api in Dev
 
-    # assuming no blacklist functions
-    ./build.sh xyz-api-dev dev
+    # assuming no blacklist functions building from Jenkins
+    ./build.sh linux xyz-api-dev
 
-The build script will generate a functionbeat package for all logs in the namespace provided. If one already exists for the given namespace, the function will just be updated.
+The build script will generate a functionbeat package for all logs in the namespace provided. If one already exists for that namespace, the function will be updated.
 
 ## TODO - Link to or Define Standard Log Format
 
