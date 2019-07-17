@@ -4,9 +4,10 @@ set -e
 # AWS="aws --profile=flosports-production" 
 AWS="aws" 
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
-NAMESPACE=$1
-ENV=$2
-EXCLUDE="$3"
+OS=$1
+NAMESPACE=$2
+ENV=$3
+EXCLUDE="$4"
 FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=1024
 TIMEOUT=30
@@ -27,9 +28,9 @@ for fn in `cat functions.txt`; do
   echo "$entry" >>functionbeat.yml
 done
 
-./functionbeat setup -e -v --template --pipelines
+./functionbeat-${OS} setup -e -v --template --pipelines
 echo "Building function package."
-./functionbeat -e -v package
+./functionbeat-${OS} -e -v package
 
 set +e
 EXISTS=$($AWS lambda get-function --function-name log-processor-${NAMESPACE} --output text || false)
