@@ -11,12 +11,13 @@ Build.sh takes three parameters.
 
 1) The OS of the build (determines which compilation of functionbeat to run). Valid values are `osx` or `linux`
 2) The beginning namespace of a serverless application. eg. `live-api-prod`
-3) An optional list of functions keywords to blacklist. eg. `"xlog|ylog|zlog`
+3) The ElasticSearch index prefix. eg. `app-x-nonprod`
+4) An optional list of functions keywords to blacklist. eg. `"xlog|ylog|zlog`
 
 ### Application xyz-api in Dev
 
     # assuming no blacklist functions building from Jenkins
-    ./build.sh linux xyz-api-dev
+    ./build.sh linux xyz-api-dev xyz-api-nonprod
 
 The build script will generate a functionbeat package for all logs in the namespace provided. If one already exists for that namespace, the function will be updated.
 

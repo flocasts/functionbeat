@@ -5,7 +5,8 @@ AWS="aws --profile=flosports-production --output=json"
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 OS=$1
 NAMESPACE=$2
-EXCLUDE="$3"
+IDX_NAME=$3
+EXCLUDE="$4"
 FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=1024
 TIMEOUT=30
@@ -21,7 +22,7 @@ echo "Building ${FN_NAME}."
 $AWS lambda list-functions | awk "/FunctionName/ && /${NAMESPACE}/ { print \$2 }" \
   | egrep -v "logger|datadog|log-processor${EXCLUDE}" | sed 's/"//g;s/,//' | sort >|functions.txt
 
-sed "s/VAR_NAME/${FN_NAME}/" functionbeat_base.yml >| functionbeat.yml
+sed "s/VAR_NAME/${FN_NAME}/;s/IDX_NAME/${IDX_NAME}/" functionbeat_base.yml >| functionbeat.yml
 
 for fn in `cat functions.txt`; do
   entry="          - { log_group_name: /aws/lambda/${fn}, filter_pattern: '?-START ?-END ?-REPORT' }"

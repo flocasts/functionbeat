@@ -17,6 +17,12 @@ output:
     enabled: true
     pipeline: cloudwatch-logs
 
+output.elasticsearch.index: "IDX_NAME-fb%{[agent.version]}-%{+yyyy.MM.dd}"
+setup.template.name: "IDX_NAME-fb%{[agent.version]}"
+setup.template.pattern: "IDX_NAME-fb%{[agent.version]}-*"
+setup.ilm.policy_name: "IDX_NAME-fb%{[agent.version]}"
+setup.ilm.rollover_alias: IDX_NAME
+
 path.logs: /tmp/logs
 
 processors:
@@ -59,21 +65,8 @@ processors:
     fields:
     - dissect.msg
     max_depth: 5
-    process_array: false
+    process_array: true
     target: log
-    # when:
-    #   contains:
-    #     dissect.msg: "{"
-
-# Surrounding commented sections are the latest attempt to ingest lambda timeouts.
-# - add_fields:
-#     fields:
-#       lambda_error: "Task timed out"
-#       log: "{}"
-#     when:
-#       not:
-#         contains:
-#           dissect.msg: "{"
 
 - drop_fields:
     fields:
