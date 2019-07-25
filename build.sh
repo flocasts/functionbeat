@@ -29,7 +29,7 @@ for fn in `cat functions.txt`; do
   echo "$entry" >>functionbeat.yml
 done
 
-./functionbeat-${OS} setup -e -v --template --pipelines
+./functionbeat-${OS} setup -e -v --index-management --pipelines
 echo "Building function package."
 ./functionbeat-${OS} -e -v package
 
