@@ -15,7 +15,6 @@ output:
   elasticsearch:
     bulk_max_size: 50
     enabled: true
-    pipeline: cloudwatch-logs
 
 output.elasticsearch.index: "IDX_NAME-fb%{[agent.version]}-%{+yyyy.MM.dd}"
 setup.template.name: "IDX_NAME-fb%{[agent.version]}"
@@ -28,18 +27,18 @@ path.logs: /tmp/logs
 processors:
 - drop_fields:
     fields:
-    - agent.ephemeral_id
-    - agent.hostname
-    - agent.id
-    - agent.type
-    - agent.version
-    - ecs.version
-    - host.name
-    - id
-    - log_stream
-    - owner
-    - subscription_filters
-    - message_type
+      - agent.ephemeral_id
+      - agent.hostname
+      - agent.id
+      - agent.type
+      - agent.version
+      - ecs.version
+      - host.name
+      - id
+      - log_stream
+      - owner
+      - subscription_filters
+      - message_type
 
 - dissect:
     field: log_group
@@ -51,56 +50,10 @@ processors:
     - from: "dissect_log.function"
       to: function
 
-- dissect:
-    field: message
-    target_prefix: dissect
-    tokenizer: "%{ts}\t%{uuid}\t%{msg}"
-
-- rename:
-    fields:
-    - from: "dissect.ts"
-      to: start_time
-
-- decode_json_fields:
-    fields:
-    - dissect.msg
-    max_depth: 5
-    process_array: false
-    target: log
-
-# log.misc is specific to live-api but won't interfere with other log types
-- if:
-    has_fields: ['log.misc']
-  then:
-  - extract_array:
-      field: log.misc
-      fail_on_error: false
-      ignore_missing: true
-      omit_empty: false
-      mappings:
-        log.misc0: 0
-        log.misc1: 1
-        log.misc2: 2
-        log.misc3: 3
-        log.misc4: 4
-  - decode_json_fields:
-      fields:
-      - log.misc0
-      - log.misc1
-      - log.misc2
-      - log.misc3
-      - log.misc4
-      max_depth: 5
-  - drop_fields:
-      fields:
-      - log.misc
-
 - drop_fields:
     fields:
-    - dissect
-    - dissect_log
-    - log_group
-    - message
+      - dissect_log
+      - log_group
 
 queue:
   mem:

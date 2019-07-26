@@ -6,12 +6,17 @@ ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 OS=$1
 NAMESPACE=$2
 IDX_NAME=$3
-EXCLUDE="$4"
 FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=1024
 TIMEOUT=30
+# FB_META=true - export this if processing functionbeat logs
 
-[[ $EXCLUDE == "" ]] || EXCLUDE="|$EXCLUDE"
+BASE_TEMPLATE="functionbeat_base.yml"
+EXCLUDE="log-processor|datadog"
+if [[ -n ${FB_META+x} && $FB_META ]]; then
+  BASE_TEMPLATE="functionbeat_meta_base.yml"
+  EXCLUDE="log-processor-log-processor|datadog${EXCLUDE}"
+fi
 
 if [[ $OS == "linux" ]]; then
   AWS="aws --output=json"
@@ -20,16 +25,16 @@ fi
 echo "Building ${FN_NAME}."
 
 $AWS lambda list-functions | awk "/FunctionName/ && /${NAMESPACE}/ { print \$2 }" \
-  | egrep -v "logger|datadog|log-processor${EXCLUDE}" | sed 's/"//g;s/,//' | sort >|functions.txt
+  | egrep -v "$EXCLUDE" | sed 's/"//g;s/,//' | sort >|functions.txt
 
-sed "s/VAR_NAME/${FN_NAME}/;s/IDX_NAME/${IDX_NAME}/" functionbeat_base.yml >| functionbeat.yml
+sed "s/VAR_NAME/${FN_NAME}/;s/IDX_NAME/${IDX_NAME}/" $BASE_TEMPLATE >| functionbeat.yml
 
 for fn in `cat functions.txt`; do
   entry="          - { log_group_name: /aws/lambda/${fn}, filter_pattern: '?-START ?-END ?-REPORT' }"
   echo "$entry" >>functionbeat.yml
 done
 
-./functionbeat-${OS} setup -e -v --index-management --pipelines
+./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
 ./functionbeat-${OS} -e -v package
 
