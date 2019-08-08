@@ -1,12 +1,12 @@
 {
   "cloudwatch-logs" : {
-    "description" : "CloudWatch Logs Lambda Pipeline.",
+    "description" : "CloudWatch Logs API Gateway Pipeline.",
     "processors" : [
       {
         "date" : {
           "ignore_failure" : false,
-          "field" : "start_time",
-          "formats" : ["yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"],
+          "field" : "requestTime",
+          "formats" : ["UNIX_MS"],
           "on_failure" : [
             {
               "set" : {

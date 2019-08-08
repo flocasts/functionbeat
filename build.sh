@@ -8,7 +8,7 @@ NAMESPACE=$2
 IDX_NAME=$3
 FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=1024
-TIMEOUT=30
+TIMEOUT=90
 # FB_META=true - export this if processing functionbeat logs
 
 BASE_TEMPLATE="functionbeat_base.yml"
@@ -73,6 +73,7 @@ else
     --memory-size $MEM_SIZE \
     --function-name "$FN_NAME" \
     --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
+    --tags "role=log-processor,project=${NAMESPACE}" \
     --timeout $TIMEOUT \
     --output text
 

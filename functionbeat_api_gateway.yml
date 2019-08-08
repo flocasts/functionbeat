@@ -1,0 +1,80 @@
+cloud:
+  auth: "${CLOUD_AUTH}"
+  id: "${CLOUD_ID}"
+
+keystore:
+  path: './beats.keystore'
+
+logging:
+  json: true
+  level: warning
+  to_files: false
+  to_stderr: true
+
+output:
+  elasticsearch:
+    bulk_max_size: 50
+    enabled: true
+    pipeline: api-gateway
+
+output.elasticsearch.index: "api-gateway-%{[agent.version]}-%{+yyyy.MM.dd}"
+setup.template.name: "api-gateway-%{[agent.version]}"
+setup.template.pattern: "api-gateway-%{[agent.version]}-*"
+setup.ilm.policy_name: "api-gateway-%{[agent.version]}"
+setup.ilm.rollover_alias: api-gateway
+
+path.logs: /tmp/logs
+
+processors:
+- drop_fields:
+    fields:
+    - agent.ephemeral_id
+    - agent.hostname
+    - agent.id
+    - agent.type
+    - agent.version
+    - ecs.version
+    - host.name
+    - id
+    - log_stream
+    - owner
+    - subscription_filters
+    - message_type
+
+- decode_json_fields:
+    fields:
+    - message
+    max_depth: 5
+    process_array: false
+    target: log
+
+queue:
+  mem:
+    events: 4096
+    flush.min_events: 2048
+    flush.timeout: 60s
+
+setup:
+  ilm:
+    enabled: auto
+  kibana:
+    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
+    username: "${KIBANA_USER}"
+    password: "${KIBANA_PASS}"
+    protocol: https
+  template:
+    enabled: true
+
+functionbeat:
+  provider:
+    aws:
+      deploy_bucket: flosports-functionbeat-deploy
+      functions:
+      - type: cloudwatch_logs
+        concurrency: 20
+        description: lambda function for cloudwatch logs
+        enabled: true
+        memory_size: 1024MiB
+        name: log-processor-api-gateway
+        triggers:
+          - { log_group_name: /aws/api-gateway/live-api }
