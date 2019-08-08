@@ -9,11 +9,13 @@ IDX_NAME=$3
 FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=256
 TIMEOUT=90
-# FB_META=true - export this if processing functionbeat logs
+LOG_PREFIX="${LOG_PREFIX:-/aws/lambda/}"
+FB_META=${FB_META:-false}
+ADD_FILTERS=${ADD_FILTERS:-true}
 
 BASE_TEMPLATE="functionbeat_base.yml"
 EXCLUDE="log-processor|datadog"
-if [[ -n ${FB_META+x} && $FB_META ]]; then
+if [[ $FB_META == true ]]; then
   BASE_TEMPLATE="functionbeat_meta_base.yml"
   EXCLUDE="log-processor-log-processor|datadog${EXCLUDE}"
 fi
@@ -24,13 +26,15 @@ fi
 
 echo "Building ${FN_NAME}."
 
-$AWS lambda list-functions | awk "/FunctionName/ && /${NAMESPACE}/ { print \$2 }" \
-  | egrep -v "$EXCLUDE" | sed 's/"//g;s/,//' | sort >|functions.txt
+$AWS  logs describe-log-groups --query "logGroups[*].logGroupName" | jq '.[]' \
+  | sed 's/"//g;s/ //g;s/[\[\]]//g' \
+  | grep "${NAMESPACE}" | grep "$LOG_PREFIX" | egrep -v "$EXCLUDE" | sort >|log_groups.txt
+
 
 sed "s/VAR_NAME/${FN_NAME}/;s/IDX_NAME/${IDX_NAME}/" $BASE_TEMPLATE >| functionbeat.yml
 
-for fn in `cat functions.txt`; do
-  entry="          - { log_group_name: /aws/lambda/${fn}, filter_pattern: '?-START ?-END ?-REPORT' }"
+for group in `cat log_groups.txt`; do
+  entry="          - { log_group_name: ${group}, filter_pattern: '?-START ?-END ?-REPORT' }"
   echo "$entry" >>functionbeat.yml
 done
 
@@ -81,22 +85,24 @@ else
     --principal logs.us-west-2.amazonaws.com \
     --action lambda:InvokeFunction \
     --statement-id "${NAMESPACE}-InvokeLogProcessor" \
-    --source-arn "arn:aws:logs:us-west-2:215207670129:log-group:/aws/lambda/${NAMESPACE}*:*" \
+    --source-arn "arn:aws:logs:us-west-2:215207670129:log-group:${LOG_PREFIX}${NAMESPACE}*:*" \
     --function-name "$FN_NAME" \
     --source-account 215207670129 \
     --output text || true
 
 fi
 
-echo "Adding subscription filters..."
+if [[ $ADD_FILTERS == true ]]; then
+  echo "Adding subscription filters..."
 
-for fn in `cat functions.txt`; do 
-  echo $fn
-  fn_filter=$(tr -d '-' <<<$fn)
-  $AWS logs put-subscription-filter \
-    --filter-name $fn \
-    --log-group-name "/aws/lambda/${fn}" \
-    --filter-pattern "actualEnv" \
-    --destination-arn "arn:aws:lambda:us-west-2:215207670129:function:${FN_NAME}" \
-    --distribution "ByLogStream" || true
-done
+  for group in `cat log_groups.txt`; do
+    group_filter=$(tr -d '-' <<<$group | awk -F/ '{print $NF}')
+    echo $group_filter
+    $AWS logs put-subscription-filter \
+      --filter-name "$group" \
+      --log-group-name "$group" \
+      --filter-pattern "actualEnv" \
+      --destination-arn "arn:aws:lambda:us-west-2:215207670129:function:${FN_NAME}" \
+      --distribution "ByLogStream" || true
+  done
+fi

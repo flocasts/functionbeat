@@ -13,7 +13,7 @@ logging:
 
 output:
   elasticsearch:
-    bulk_max_size: 50
+    bulk_max_size: 100
     enabled: true
     pipeline: api-gateway
 
@@ -50,9 +50,9 @@ processors:
 
 queue:
   mem:
-    events: 4096
-    flush.min_events: 2048
-    flush.timeout: 60s
+    events: 1024
+    flush.min_events: 256
+    flush.timeout: 15s
 
 setup:
   ilm:
@@ -71,10 +71,10 @@ functionbeat:
       deploy_bucket: flosports-functionbeat-deploy
       functions:
       - type: cloudwatch_logs
-        concurrency: 20
+        concurrency: 5
         description: lambda function for cloudwatch logs
         enabled: true
-        memory_size: 1024MiB
+        memory_size: 256MiB
         name: log-processor-api-gateway
         triggers:
           - { log_group_name: /aws/api-gateway/live-api }
