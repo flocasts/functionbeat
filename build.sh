@@ -7,7 +7,7 @@ OS=$1
 NAMESPACE=$2
 IDX_NAME=$3
 FN_NAME="log-processor-${NAMESPACE}"
-MEM_SIZE=1024
+MEM_SIZE=256
 TIMEOUT=90
 # FB_META=true - export this if processing functionbeat logs
 
