@@ -20,6 +20,8 @@ output:
 output.elasticsearch.index: "IDX_NAME-fb%{[agent.version]}-%{+yyyy.MM.dd}"
 setup.template.name: "IDX_NAME-fb%{[agent.version]}"
 setup.template.pattern: "IDX_NAME-fb%{[agent.version]}-*"
+setup.template.settings:
+  number_of_shards: 3
 setup.ilm.policy_name: "IDX_NAME-fb%{[agent.version]}"
 setup.ilm.rollover_alias: IDX_NAME
 
@@ -104,10 +106,9 @@ processors:
 
 queue:
   mem:
-    events: 128
-    flush:
-      min_events: 8
-      timeout: 10s
+    events: 1024
+    flush.min_events: 512
+    flush.timeout: 60s
 
 setup:
   ilm:
