@@ -13,7 +13,7 @@ logging:
 
 output:
   elasticsearch:
-    bulk_max_size: 50
+    bulk_max_size: 100
     enabled: true
 
 output.elasticsearch.index: "IDX_NAME-fb%{[agent.version]}-%{+yyyy.MM.dd}"
@@ -57,10 +57,10 @@ processors:
 
 queue:
   mem:
-    events: 128
+    events: 512
     flush:
-      min_events: 8
-      timeout: 10s
+      min_events: 128
+      timeout: 15s
 
 setup:
   ilm:
@@ -79,7 +79,7 @@ functionbeat:
       deploy_bucket: flosports-functionbeat-deploy
       functions:
       - type: cloudwatch_logs
-        concurrency: 20
+        concurrency: 5
         description: lambda function for cloudwatch logs
         enabled: true
         memory_size: 1024MiB

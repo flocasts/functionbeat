@@ -7,8 +7,8 @@ OS=$1
 NAMESPACE=$2
 IDX_NAME=$3
 FN_NAME="log-processor-${NAMESPACE}"
-MEM_SIZE=256
-TIMEOUT=90
+MEM_SIZE=128
+TIMEOUT=91
 LOG_PREFIX="${LOG_PREFIX:-/aws/lambda/}"
 FB_META=${FB_META:-false}
 ADD_FILTERS=${ADD_FILTERS:-true}
@@ -96,10 +96,10 @@ if [[ $ADD_FILTERS == true ]]; then
   echo "Adding subscription filters..."
 
   for group in `cat log_groups.txt`; do
-    group_filter=$(tr -d '-' <<<$group | awk -F/ '{print $NF}')
-    echo $group_filter
+    echo $group
+    group_filter=$(awk -F/ '{print $NF}' <<<$group)
     $AWS logs put-subscription-filter \
-      --filter-name "$group" \
+      --filter-name "$group_filter" \
       --log-group-name "$group" \
       --filter-pattern "actualEnv" \
       --destination-arn "arn:aws:lambda:us-west-2:215207670129:function:${FN_NAME}" \
