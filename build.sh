@@ -8,7 +8,8 @@ NAMESPACE=$2
 IDX_NAME=$3
 FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=128
-TIMEOUT=91
+TIMEOUT=90
+LAMBDA_CONCURRENCY=${LAMBDA_CONCURRENCY:-10}
 LOG_PREFIX="${LOG_PREFIX:-/aws/lambda/}"
 FB_META=${FB_META:-false}
 ADD_FILTERS=${ADD_FILTERS:-true}
@@ -58,6 +59,10 @@ if [[ $EXISTS ]]; then
     --timeout $TIMEOUT \
     --output text
 
+  $AWS lambda put-function-concurrency \
+    --function-name $FN_NAME \
+    --reserved-concurrent-executions $LAMBDA_CONCURRENCY
+
   $AWS lambda update-function-code \
     --function-name "$FN_NAME" \
     --publish \
@@ -80,6 +85,10 @@ else
     --tags "role=log-processor,project=${NAMESPACE}" \
     --timeout $TIMEOUT \
     --output text
+
+    $AWS lambda put-function-concurrency \
+    --function-name $FN_NAME \
+    --reserved-concurrent-executions $LAMBDA_CONCURRENCY
 
   $AWS lambda add-permission \
     --principal logs.us-west-2.amazonaws.com \
