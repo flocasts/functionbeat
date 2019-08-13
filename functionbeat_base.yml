@@ -11,6 +11,20 @@ logging:
   to_files: false
   to_stderr: true
 
+setup:
+  kibana:
+    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
+    username: "${KIBANA_USER}"
+    password: "${KIBANA_PASS}"
+    protocol: https
+  template:
+    enabled: true
+    overwrite: false
+    name: "live-api-prod-%{[agent.version]}"
+    pattern: "live-api-prod-%{[agent.version]}-*"
+    settings.index.number_of_shards: 3
+  ilm.enabled: false
+
 output:
   elasticsearch:
     bulk_max_size: 50
@@ -22,19 +36,11 @@ output:
     backoff_max: 60
     timeout: 30
 
-setup:
-  kibana:
-    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
-    username: "${KIBANA_USER}"
-    password: "${KIBANA_PASS}"
-    protocol: https
-  template:
-    enabled: true
-    # overwrite: true
-    name: "live-api-prod-%{[agent.version]}"
-    pattern: "live-api-prod-%{[agent.version]}-*"
-    settings:
-      number_of_shards: 3
+queue:
+  mem:
+    events: 512
+    flush.min_events: 256
+    flush.timeout: 5s
 
 path.logs: /tmp/logs
 
@@ -114,21 +120,6 @@ processors:
     - dissect_log
     - log_group
     - message
-
-queue:
-  mem:
-    events: 512
-    flush.min_events: 256
-    flush.timeout: 5s
-
-setup:
-  kibana:
-    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
-    username: "${KIBANA_USER}"
-    password: "${KIBANA_PASS}"
-    protocol: https
-  template:
-    enabled: true
 
 functionbeat:
   provider:
