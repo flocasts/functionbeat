@@ -11,19 +11,36 @@ logging:
   to_files: false
   to_stderr: true
 
+setup:
+  kibana:
+    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
+    username: "${KIBANA_USER}"
+    password: "${KIBANA_PASS}"
+    protocol: https
+  template:
+    enabled: true
+    overwrite: false
+    name: "live-api-prod-%{[agent.version]}"
+    pattern: "live-api-prod-%{[agent.version]}-*"
+    settings.index.number_of_shards: 3
+  ilm.enabled: false
+
 output:
   elasticsearch:
     bulk_max_size: 50
     enabled: true
     pipeline: cloudwatch-logs
+    index: "IDX_NAME-%{[agent.version]}-%{+yyyy.MM.dd}"
+    max_retries: 2
+    backoff_init: 2 # exponential backoff up to max
+    backoff_max: 60
+    timeout: 30
 
-output.elasticsearch.index: "IDX_NAME-fb%{[agent.version]}-%{+yyyy.MM.dd}"
-setup.template.name: "IDX_NAME-fb%{[agent.version]}"
-setup.template.pattern: "IDX_NAME-fb%{[agent.version]}-*"
-setup.template.settings:
-  number_of_shards: 3
-setup.ilm.policy_name: "IDX_NAME-fb%{[agent.version]}"
-setup.ilm.rollover_alias: IDX_NAME
+queue:
+  mem:
+    events: 512
+    flush.min_events: 256
+    flush.timeout: 5s
 
 path.logs: /tmp/logs
 
@@ -104,32 +121,15 @@ processors:
     - log_group
     - message
 
-queue:
-  mem:
-    events: 1024
-    flush.min_events: 256
-    flush.timeout: 15s
-
-setup:
-  ilm:
-    enabled: auto
-  kibana:
-    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
-    username: "${KIBANA_USER}"
-    password: "${KIBANA_PASS}"
-    protocol: https
-  template:
-    enabled: true
-
 functionbeat:
   provider:
     aws:
       deploy_bucket: flosports-functionbeat-deploy
       functions:
       - type: cloudwatch_logs
-        concurrency: 5
+        concurrency: 10 # For visibility; this doesn't populate. The value is set in the build script.
         description: lambda function for cloudwatch logs
         enabled: true
-        memory_size: 256MiB
+        memory_size: 128 MiB # For visability; same issue as concurrency
         name: VAR_NAME
         triggers:
