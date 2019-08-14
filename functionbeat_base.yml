@@ -19,11 +19,14 @@ setup:
     protocol: https
   template:
     enabled: true
-    overwrite: false
-    name: "live-api-prod-%{[agent.version]}"
-    pattern: "live-api-prod-%{[agent.version]}-*"
+    # overwrite: false
+    name: "IDX_NAME-%{[agent.version]}"
+    pattern: "IDX_NAME-%{[agent.version]}-*"
     settings.index.number_of_shards: 3
-  ilm.enabled: false
+  ilm:
+    enabled: auto
+    policy_name: "IDX_NAME-%{[agent.version]}"
+    rollover_alias: IDX_NAME
 
 output:
   elasticsearch:
@@ -34,7 +37,7 @@ output:
     max_retries: 2
     backoff_init: 2 # exponential backoff up to max
     backoff_max: 60
-    timeout: 30
+    timeout: 60
 
 queue:
   mem:
