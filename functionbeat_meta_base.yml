@@ -11,16 +11,32 @@ logging:
   to_files: false
   to_stderr: true
 
+setup:
+  kibana:
+    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
+    username: "${KIBANA_USER}"
+    password: "${KIBANA_PASS}"
+    protocol: https
+  template:
+    enabled: true
+    overwrite: true
+    name: "IDX_NAME-%{[agent.version]}"
+    pattern: "IDX_NAME-%{[agent.version]}-*"
+    settings.index.number_of_shards: 3
+  ilm:
+    enabled: auto
+    policy_name: "IDX_NAME-%{[agent.version]}"
+    rollover_alias: IDX_NAME
+
 output:
   elasticsearch:
-    bulk_max_size: 100
+    bulk_max_size: 50
     enabled: true
-
-output.elasticsearch.index: "IDX_NAME-fb%{[agent.version]}-%{+yyyy.MM.dd}"
-setup.template.name: "IDX_NAME-fb%{[agent.version]}"
-setup.template.pattern: "IDX_NAME-fb%{[agent.version]}-*"
-setup.ilm.policy_name: "IDX_NAME-fb%{[agent.version]}"
-setup.ilm.rollover_alias: IDX_NAME
+    index: "IDX_NAME-%{[agent.version]}-%{+yyyy.MM.dd}"
+    max_retries: 2
+    backoff_init: 2 # exponential backoff up to max
+    backoff_max: 60
+    timeout: 60
 
 path.logs: /tmp/logs
 
@@ -59,19 +75,8 @@ queue:
   mem:
     events: 512
     flush:
-      min_events: 128
-      timeout: 15s
-
-setup:
-  ilm:
-    enabled: auto
-  kibana:
-    host: 4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243
-    username: "${KIBANA_USER}"
-    password: "${KIBANA_PASS}"
-    protocol: https
-  template:
-    enabled: true
+      min_events: 256
+      timeout: 5s
 
 functionbeat:
   provider:

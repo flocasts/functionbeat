@@ -19,7 +19,7 @@ setup:
     protocol: https
   template:
     enabled: true
-    # overwrite: false
+    # overwrite: true
     name: "IDX_NAME-%{[agent.version]}"
     pattern: "IDX_NAME-%{[agent.version]}-*"
     settings.index.number_of_shards: 3
