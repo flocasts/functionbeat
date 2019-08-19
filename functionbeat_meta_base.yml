@@ -75,8 +75,8 @@ queue:
   mem:
     events: 512
     flush:
-      min_events: 256
-      timeout: 5s
+      min_events: 128
+      timeout: 10s
 
 functionbeat:
   provider:
@@ -84,9 +84,7 @@ functionbeat:
       deploy_bucket: flosports-functionbeat-deploy
       functions:
       - type: cloudwatch_logs
-        concurrency: 5
         description: lambda function for cloudwatch logs
         enabled: true
-        memory_size: 1024MiB
         name: VAR_NAME
         triggers:

@@ -30,20 +30,20 @@ setup:
 
 output:
   elasticsearch:
-    bulk_max_size: 50
+    bulk_max_size: 100
     enabled: true
     pipeline: cloudwatch-logs
     index: "IDX_NAME-%{[agent.version]}-%{+yyyy.MM.dd}"
     max_retries: 2
     backoff_init: 2 # exponential backoff up to max
     backoff_max: 60
-    timeout: 60
+    timeout: 61
 
 queue:
   mem:
     events: 512
-    flush.min_events: 256
-    flush.timeout: 5s
+    flush.min_events: 128
+    flush.timeout: 10s
 
 path.logs: /tmp/logs
 
@@ -130,9 +130,7 @@ functionbeat:
       deploy_bucket: flosports-functionbeat-deploy
       functions:
       - type: cloudwatch_logs
-        concurrency: 10 # For visibility; this doesn't populate. The value is set in the build script.
         description: lambda function for cloudwatch logs
         enabled: true
-        memory_size: 128 MiB # For visability; same issue as concurrency
         name: VAR_NAME
         triggers:
