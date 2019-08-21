@@ -41,9 +41,10 @@ output:
 
 queue:
   mem:
-    events: 512
-    flush.min_events: 128
-    flush.timeout: 10s
+    events: 1024
+    flush:
+      min_events: 128
+      timeout: 15s
 
 path.logs: /tmp/logs
 
