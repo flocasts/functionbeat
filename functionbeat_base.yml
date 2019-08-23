@@ -30,21 +30,21 @@ setup:
 
 output:
   elasticsearch:
-    bulk_max_size: 100
+    bulk_max_size: 200
     enabled: true
     pipeline: cloudwatch-logs
     index: "IDX_NAME-%{[agent.version]}-%{+yyyy.MM.dd}"
-    max_retries: 2
-    backoff_init: 2 # exponential backoff up to max
+    max_retries: 3
+    backoff_init: 1 # exponential backoff up to max
     backoff_max: 60
     timeout: 61
 
 queue:
   mem:
-    events: 1024
+    events: 2048
     flush:
-      min_events: 128
-      timeout: 15s
+      min_events: 256
+      timeout: 2s
 
 path.logs: /tmp/logs
 
