@@ -20,20 +20,22 @@ setup:
   template:
     enabled: true
     # overwrite: true
-    name: "IDX_NAME-%{[agent.version]}"
-    pattern: "IDX_NAME-%{[agent.version]}-*"
+    name: "IDX_NAME"
+    pattern: "IDX_NAME-*"
     settings.index.number_of_shards: 3
   ilm:
     enabled: auto
-    policy_name: "IDX_NAME-%{[agent.version]}"
-    rollover_alias: IDX_NAME
+    policy_name: "IDX_NAME"
+    rollover_alias: "IDX_NAME"
+    pattern: "{now/d}-000001"
+    policy_file: './ilm_policy.json'
 
 output:
   elasticsearch:
     bulk_max_size: 200
     enabled: true
     pipeline: cloudwatch-logs
-    index: "IDX_NAME-%{[agent.version]}-%{+yyyy.MM.dd}"
+    index: "IDX_NAME-%{+yyyy.MM.dd}"
     max_retries: 3
     backoff_init: 1 # exponential backoff up to max
     backoff_max: 60

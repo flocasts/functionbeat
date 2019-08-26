@@ -43,6 +43,8 @@ done
 echo "Building function package."
 ./functionbeat-${OS} -e -v package
 
+zip -u package.zip ilm_policy.json
+
 set +e
 EXISTS=$($AWS lambda get-function --function-name log-processor-${NAMESPACE} --output text || false)
 set -e
