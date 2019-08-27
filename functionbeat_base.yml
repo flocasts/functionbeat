@@ -25,7 +25,7 @@ setup:
     settings.index.number_of_shards: 3
   ilm:
     enabled: auto
-    policy_name: "IDX_NAME"
+    policy_name: "IDX_NAME-%{[agent.version]}"
     rollover_alias: "IDX_NAME"
     pattern: "{now/d}-000001"
     policy_file: './ilm_policy.json'
@@ -122,44 +122,17 @@ processors:
 
   - convert:
       fields:
-        - {from: "log.lambdaEvent.body", type: "string"}
+        - {from: "log.lambdaEvent.body", type: string}
+        - {from: "log.lambdaEvent.requestContext.authorizer.id", type: string}
+        - {from: "log.lambdaEvent.requestContext.authorizer.card_address_id", type: string}
+        - {from: "log.lambdaEvent.requestContext.authorizer.card_address_zip", type: string}
+        - {from: "log.requestBody.data.code", type: string}
+        - {from: "log.response.data.status", type: string}
+        - {from: "log.lambdaEvent.snsBody.old.updatedAt", type: string}
+        - {from: "log.lambdaEvent.snsBody.new.startAtNext", type: string}
+        - {from: "log.Body.old.updatedAt", type: string}
       ignore_missing: true
       fail_on_error: false
-      when:
-        contains:
-          'log.functionName': save-stream-lifecycle
-
-  - convert:
-      fields:
-        - {from: "log.response.data.status", type: "string"}
-      ignore_missing: true
-      fail_on_error: false
-      when:
-        contains:
-          'log.functionName': event-updated
-        and.not.contains:
-          'log.functionName': event-updated-
-
-  - convert:
-      fields:
-        - {from: "log.lambdaEvent.snsBody.old.updatedAt", type: "string"}
-        - {from: "log.lambdaEvent.snsBody.new.startAtNext", type: "string"}
-      ignore_missing: true
-      fail_on_error: false
-      when:
-        contains:
-          'log.functionName': event-updated-
-
-  - convert:
-      fields:
-        - {from: "log.requestBody.data.code", type: "string"}
-      ignore_missing: true
-      fail_on_error: false
-      when:
-        contains:
-          'log.functionName': post-stream
-        and.not.contains:
-          'log.functionName': post-stream-
 
 - drop_fields:
     fields:
