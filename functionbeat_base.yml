@@ -143,6 +143,7 @@ processors:
   - convert:
       fields:
         - {from: "log.lambdaEvent.snsBody.old.updatedAt", type: "string"}
+        - {from: "log.lambdaEvent.snsBody.new.startAtNext", type: "string"}
       ignore_missing: true
       fail_on_error: false
       when:
