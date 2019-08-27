@@ -122,6 +122,7 @@ processors:
 
   - convert:
       fields:
+        - {from: "log.message", type: string}
         - {from: "log.lambdaEvent.body", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.id", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.card_address_id", type: string}
@@ -131,11 +132,12 @@ processors:
         - {from: "log.request.body.status", type: string}
         - {from: "log.response.data.status", type: string}
         - {from: "log.lambdaEvent.snsBody.old.updatedAt", type: string}
+        - {from: "log.lambdaEvent.snsBody.new.startAt", type: string}
         - {from: "log.lambdaEvent.snsBody.new.startAtNext", type: string}
         - {from: "log.lambdaEvent.snsBody.new.updatedAt", type: string}
         - {from: "log.lambdaEvent.snsBody.new.endAt", type: string}
-        - {from: "log.message", type: string}
         - {from: "log.Body.old.updatedAt", type: string}
+        - {from: "log.Body.new.startAt", type: string}
         - {from: "log.Body.new.startAtNext", type: string}
         - {from: "log.Body.new.updatedAt", type: string}
         - {from: "log.Body.new.endAt", type: string}
