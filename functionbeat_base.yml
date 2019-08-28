@@ -128,6 +128,7 @@ processors:
         - {from: "log.lambdaEvent.requestContext.authorizer.card_address_id", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.card_address_zip", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.sites", type: string}
+        - {from: "log.lambdaEvent.requestContext.authorizer.principalId", type: string}
         - {from: "log.requestBody.data.code", type: string}
         - {from: "log.request.body.status", type: string}
         - {from: "log.response.data.status", type: string}
