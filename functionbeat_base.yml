@@ -123,6 +123,7 @@ processors:
   - convert:
       fields:
         - {from: "log.message", type: string}
+        - {from: "log.error.error.code", type: string}
         - {from: "log.lambdaEvent.body", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.id", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.card_address_id", type: string}
