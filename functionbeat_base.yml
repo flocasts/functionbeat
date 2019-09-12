@@ -124,7 +124,9 @@ processors:
       fields:
         - {from: "log.message", type: string}
         - {from: "log.error.message", type: string}
-        - {from: "log.error.error.code", type: string}
+        - {from: "log.error.error", type: string}
+        - {from: "log.error.fields", type: string}
+        - {from: "log.error.response.body", type: string}
         - {from: "log.lambdaEvent.body", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.id", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.card_address_id", type: string}
@@ -146,6 +148,7 @@ processors:
         - {from: "log.Body.new.updatedAt", type: string}
         - {from: "log.Body.new.endAt", type: string}
         - {from: "log.misc0.context.value.volume", type: string}
+        - {from: "log.misc0.context.value.offset", type: string}
         - {from: "log.lambdaEvent.snsBody.new.endAt", type: string}
         - {from: "log.input.clippedPlaylist.chunklists.duration", type: string}
         - {from: "log.body.clipBody.meta.sportData.level", type: string}
@@ -160,8 +163,9 @@ processors:
         - {from: "log.lambdaEvent.sqsBody.clipBody.meta.isPremium", type: string}
         - {from: "log.body.clipBody.meta.isPremium", type: string}
         - {from: "log.lambdaEvent.clipBody.meta.isPremium", type: string}
+        - {from: "log.response.data.id", type: string}
+        - {from: "log.lambdaEvent.requestContext.authorizer.username", type: string}
         # - {from: "", type: string}
-
       ignore_missing: true
       fail_on_error: false
 

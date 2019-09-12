@@ -5,7 +5,7 @@ AWS="aws --profile=flosports-production --output=json"
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 OS=$1
 NAMESPACE=$2
-IDX_NAME=$3
+IDX_NAME=${3:-$NAMESPACE}
 FN_NAME="log-processor-${NAMESPACE}"
 MEM_SIZE=128
 TIMEOUT=90
