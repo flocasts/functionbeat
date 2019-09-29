@@ -165,6 +165,9 @@ processors:
         - {from: "log.lambdaEvent.clipBody.meta.isPremium", type: string}
         - {from: "log.response.data.id", type: string}
         - {from: "log.lambdaEvent.requestContext.authorizer.username", type: string}
+        - {from: "log.body", type: string}
+        - {from: "log.requestBody", type: string}
+        - {from: "log.conf.body", type: string}
         # - {from: "", type: string}
       ignore_missing: true
       fail_on_error: false
