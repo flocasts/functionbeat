@@ -57,7 +57,7 @@ if [[ $EXISTS ]]; then
     --handler "functionbeat-aws" \
     --memory-size $MEM_SIZE \
     --function-name "$FN_NAME" \
-    --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
+    --environment "Variables={ENABLED_FUNCTIONS=${FN_NAME}}" \
     --timeout $TIMEOUT \
     --output text
 
