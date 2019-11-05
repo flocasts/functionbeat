@@ -54,7 +54,7 @@ if [[ $EXISTS ]]; then
   $AWS lambda update-function-configuration \
     --role "$ROLE" \
     --runtime "go1.x" \
-    --handler "functionbeat" \
+    --handler "functionbeat-aws" \
     --memory-size $MEM_SIZE \
     --function-name "$FN_NAME" \
     --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
@@ -78,7 +78,7 @@ else
   $AWS lambda create-function \
     --role "$ROLE" \
     --runtime "go1.x" \
-    --handler "functionbeat" \
+    --handler "functionbeat-aws" \
     --publish \
     --zip-file fileb://package-aws.zip \
     --memory-size $MEM_SIZE \
