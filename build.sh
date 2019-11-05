@@ -36,7 +36,6 @@ sed "s/VAR_NAME/${FN_NAME}/;s/IDX_NAME/${IDX_NAME}/" $BASE_TEMPLATE >| functionb
 
 chmod 600 beats.keystore
 chmod 600 functionbeat.yml
-chown 432:432 functionbeat.yml
 
 for group in `cat log_groups.txt`; do
   entry="          - { log_group_name: ${group}, filter_pattern: '?-START ?-END ?-REPORT' }"
