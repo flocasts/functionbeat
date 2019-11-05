@@ -182,6 +182,7 @@ processors:
 functionbeat:
   provider:
     aws:
+      endpoint: "s3.amazonaws.com"
       deploy_bucket: flosports-functionbeat-deploy
       functions:
       - type: cloudwatch_logs
