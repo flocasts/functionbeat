@@ -1,9 +1,9 @@
-# Functionbeat 7.1.1
+# Functionbeat 7.4.2
 
 Functionbeat is a beat implementation for a serverless architecture.
 Addtional scripts have been added to support rapid configuration/deployment for FloSports' apps.
 Logs are shipped to hosted ElasticSearch where they can be viewed in
-[Kibana](https://elk.flocasts.biz)
+[Kibana](https://4f95dc93e90e41f881de33d25141f8ac.us-west-2.aws.found.io:9243/)
 
 ## Usage (Only CloudWatch Logs ATM)
 
@@ -26,11 +26,11 @@ The build script will generate a functionbeat package for all logs in the namesp
 ## Documentation
 
 For further information about functionbeat, see the
-[Getting started](https://www.elastic.co/guide/en/beats/functionbeat/7.1/functionbeat-getting-started.html) guide.
+[Getting started](https://www.elastic.co/guide/en/beats/functionbeat/7.4/functionbeat-getting-started.html) guide.
 
-Visit [Elastic.co Docs](https://www.elastic.co/guide/en/beats/functionbeat/7.1/index.html)
+Visit [Elastic.co Docs](https://www.elastic.co/guide/en/beats/functionbeat/7.4/index.html)
 for the full Functionbeat documentation.
 
 ## Release notes
 
-https://www.elastic.co/guide/en/beats/libbeat/7.1/release-notes-7.1.1.html
+https://www.elastic.co/guide/en/beats/libbeat/7.4/release-notes-7.4.2.html
