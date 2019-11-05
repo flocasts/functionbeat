@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-AWS="aws --profile=flosports-production --output=json" 
+AWS="aws --profile=flosports-production --output=json"
 ROLE="arn:aws:iam::215207670129:role/log-processor-lambdaExecution"
 OS=$1
 NAMESPACE=$2
@@ -43,7 +43,7 @@ done
 echo "Building function package."
 ./functionbeat-${OS} -e -v package
 
-zip -u package.zip ilm_policy.json
+zip -u package-aws.zip ilm_policy.json
 
 set +e
 EXISTS=$($AWS lambda get-function --function-name log-processor-${NAMESPACE} --output text || false)
@@ -68,7 +68,7 @@ if [[ $EXISTS ]]; then
   $AWS lambda update-function-code \
     --function-name "$FN_NAME" \
     --publish \
-    --zip-file fileb://package.zip \
+    --zip-file fileb://package-aws.zip \
     --output text
 
 else
@@ -80,7 +80,7 @@ else
     --runtime "go1.x" \
     --handler "functionbeat" \
     --publish \
-    --zip-file fileb://package.zip \
+    --zip-file fileb://package-aws.zip \
     --memory-size $MEM_SIZE \
     --function-name "$FN_NAME" \
     --environment "Variables={BEAT_STRICT_PERMS=false,ENABLED_FUNCTIONS=${FN_NAME}}" \
