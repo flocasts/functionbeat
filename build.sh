@@ -42,6 +42,7 @@ done
 
 chmod 600 beats.keystore
 chmod 600 functionbeat.yml
+sudo chown 0:0 beats.keystore
 sudo chown 0:0 functionbeat.yml
 
 sudo ./functionbeat-${OS} setup -e -v --index-management
