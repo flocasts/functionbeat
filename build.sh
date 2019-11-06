@@ -36,17 +36,18 @@ sed "s/VAR_NAME/${FN_NAME}/;s/IDX_NAME/${IDX_NAME}/" $BASE_TEMPLATE >| functionb
 
 chmod 600 beats.keystore
 chmod 600 functionbeat.yml
+sudo chown 0:0 functionbeat.yml
 
 for group in `cat log_groups.txt`; do
   entry="          - { log_group_name: ${group}, filter_pattern: '?-START ?-END ?-REPORT' }"
   echo "$entry" >>functionbeat.yml
 done
 
-./functionbeat-${OS} setup -e -v --index-management
+sudo ./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
-./functionbeat-${OS} -e -v package
+sudo ./functionbeat-${OS} -e -v package
 
-zip -u package-aws.zip ilm_policy.json
+sudo zip -u package-aws.zip ilm_policy.json
 
 set +e
 EXISTS=$($AWS lambda get-function --function-name log-processor-${NAMESPACE} --output text || false)
