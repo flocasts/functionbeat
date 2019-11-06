@@ -41,15 +41,12 @@ for group in `cat log_groups.txt`; do
 done
 
 chmod 600 beats.keystore
-chmod 644 functionbeat.yml
-sudo chown 0:0 beats.keystore
-sudo chown 0:0 functionbeat.yml
 
-sudo ./functionbeat-${OS} setup -e -v --index-management
+./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
-sudo ./functionbeat-${OS} -e -v package
+./functionbeat-${OS} -e -v package
 
-sudo zip -u package-aws.zip ilm_policy.json
+zip -u package-aws.zip ilm_policy.json
 
 set +e
 EXISTS=$($AWS lambda get-function --function-name log-processor-${NAMESPACE} --output text || false)
