@@ -3,7 +3,7 @@ cloud:
   id: "${CLOUD_ID}"
 
 keystore:
-  path: './beats.keystore'
+  path: 'beats.keystore'
 
 logging:
   json: true
