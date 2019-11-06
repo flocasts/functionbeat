@@ -43,9 +43,9 @@ chmod 600 beats.keystore
 chmod 600 functionbeat.yml
 sudo chown 432:432 functionbeat.yml
 
-./functionbeat-${OS} setup -e -v --index-management
+sudo ./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
-./functionbeat-${OS} -e -v package
+sudo ./functionbeat-${OS} -e -v package
 
 zip -u package-aws.zip ilm_policy.json
 
