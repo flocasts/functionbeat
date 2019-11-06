@@ -34,14 +34,14 @@ $AWS  logs describe-log-groups --query "logGroups[*].logGroupName" | jq '.[]' \
 
 sed "s/VAR_NAME/${FN_NAME}/;s/IDX_NAME/${IDX_NAME}/" $BASE_TEMPLATE >| functionbeat.yml
 
-chmod 600 beats.keystore
-chmod 600 functionbeat.yml
-sudo chown 432:432 functionbeat.yml
-
 for group in `cat log_groups.txt`; do
   entry="          - { log_group_name: ${group}, filter_pattern: '?-START ?-END ?-REPORT' }"
   echo "$entry" >>functionbeat.yml
 done
+
+chmod 600 beats.keystore
+chmod 600 functionbeat.yml
+sudo chown 432:432 functionbeat.yml
 
 ./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
