@@ -41,7 +41,7 @@ for group in `cat log_groups.txt`; do
 done
 
 chmod 600 beats.keystore
-chmod 600 functionbeat.yml
+chmod 644 functionbeat.yml
 sudo chown 0:0 beats.keystore
 sudo chown 0:0 functionbeat.yml
 
