@@ -40,7 +40,7 @@ for group in `cat log_groups.txt`; do
   echo "$entry" >>functionbeat.yml
 done
 
-chmod 640 beats.keystore
+chmod 600 beats.keystore
 
 ./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
