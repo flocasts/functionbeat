@@ -45,7 +45,7 @@ chmod go-w functionbeat.yml
 
 ./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
-./functionbeat-${OS} -e -v package
+./functionbeat-${OS} --strict.perms=false -e -v package
 
 zip -u package-aws.zip ilm_policy.json
 zip -u package-aws.zip functionbeat.yml
