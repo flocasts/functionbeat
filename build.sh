@@ -41,6 +41,7 @@ for group in `cat log_groups.txt`; do
 done
 
 chmod 600 beats.keystore
+chmod go-w functionbeat.yml
 
 ./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
