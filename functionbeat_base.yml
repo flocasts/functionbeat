@@ -79,7 +79,7 @@ processors:
 - dissect:
     field: message
     target_prefix: dissect
-    tokenizer: "%{ts}\t%{uuid}\t${level}\t%{msg}"
+    tokenizer: "%{ts}\t%{uuid}\t%{level}\t%{msg}"
 
 - rename:
     fields:
