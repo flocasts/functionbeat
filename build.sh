@@ -43,7 +43,7 @@ done
 chmod go-wrx beats.keystore
 chmod go-w   functionbeat.yml
 
-./functionbeat-${OS} setup -e -v --index-management
+# ./functionbeat-${OS} setup -e -v --index-management
 echo "Building function package."
 ./functionbeat-${OS} --strict.perms=false -e -v package
 
